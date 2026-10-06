@@ -88,6 +88,7 @@ func (c *Cache) Set(key, value []byte, ttl time.Duration) error {
 	if ttl > 0 {
 		go func() {
 			<-time.After(ttl)
+			// <-CustomAfter(ttl)
 			c.lock.Lock()
 			defer c.lock.Unlock()
 			delete(c.data, keyStr)
@@ -96,6 +97,15 @@ func (c *Cache) Set(key, value []byte, ttl time.Duration) error {
 
 	// Return nil, indicating a successful operation.
 	return nil
+}
+
+func CustomAfter(ttl time.Duration) <-chan time.Time {
+	ch := make(chan time.Time)
+	go func() {
+		time.Sleep(ttl)
+		ch <- time.Now()
+	}()
+	return ch
 }
 
 // Has checks if the specified key exists in the cache.
